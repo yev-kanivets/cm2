@@ -41,8 +41,10 @@ fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Ar
                     if (student.startRating == -1) {
                         student.startRating = student.currentRating
                     }
-                    student.solvedTasks = acmpUser.solvedTasks
-                    student.notSolvedTasks = acmpUser.notSolvedTasks
+                    student.bonusRating = 0
+                    student.contestRating = student.currentRating - student.startRating + student.bonusRating
+                    student.solvedTasks = acmpUser.solvedTasks.toList()
+                    student.notSolvedTasks = acmpUser.notSolvedTasks.toList()
                 }
             }
             success(students)

@@ -29,7 +29,7 @@ class FirebaseClient {
     public fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Array<Student>) -> Unit) {
         val database = FirebaseDatabase.getInstance()
         val usersRef = database.getReference(KEY_USERS)
-        usersRef.addValueEventListener(object : ValueEventListener {
+        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
 
             override fun onCancelled(error: DatabaseError?) {
                 print(error)
@@ -59,6 +59,8 @@ class FirebaseClient {
         students.forEach {
             updates.put("${it.id}/startRating", it.startRating)
             updates.put("${it.id}/currentRating", it.currentRating)
+            updates.put("${it.id}/bonusRating", it.bonusRating)
+            updates.put("${it.id}/contestRating", it.contestRating)
             updates.put("${it.id}/solvedTasks", it.solvedTasks.toList())
             updates.put("${it.id}/notSolvedTasks", it.notSolvedTasks.toList())
         }
