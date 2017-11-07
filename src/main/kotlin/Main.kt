@@ -25,11 +25,11 @@ fun main(args: Array<String>) {
         override fun run() {
             fetchStudents {
                 firebaseClient.pushStudents(it) {
-                    print("${Date(System.currentTimeMillis())} Students pushed to Firebase")
+                    println("${Date(System.currentTimeMillis())} Students pushed to Firebase")
                 }
             }
         }
-    }, 0, 600000)
+    }, 0, args[0].toLong())
 }
 
 fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Array<Student>) -> Unit) {
