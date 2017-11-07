@@ -3,10 +3,7 @@ package firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseCredentials
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import model.Student
 import java.io.FileInputStream
 
@@ -33,6 +30,7 @@ class FirebaseClient {
         val database = FirebaseDatabase.getInstance()
         val usersRef = database.getReference(KEY_USERS)
         usersRef.addValueEventListener(object : ValueEventListener {
+
             override fun onCancelled(error: DatabaseError?) {
                 print(error)
             }
@@ -50,6 +48,28 @@ class FirebaseClient {
             }
 
         })
+    }
+
+    public fun pushStudents(students: Array<Student>, failure: (reason: String) -> Unit = {}, success: () -> Unit) {
+        val database = FirebaseDatabase.getInstance()
+        val usersRef = database.getReference(KEY_USERS)
+
+        val updates = mutableMapOf<String, Any>()
+
+        students.forEach {
+            updates.put("${it.id}/startRating", it.startRating)
+            updates.put("${it.id}/currentRating", it.currentRating)
+            //updates.put("${it.id}/solvedTasks", it.solvedTasks)
+            //updates.put("${it.id}/notSolvedTasks", it.notSolvedTasks)
+        }
+
+        usersRef.updateChildren(updates) { error: DatabaseError?, ref: DatabaseReference ->
+            if (error == null) {
+                success()
+            } else {
+                failure(error.message)
+            }
+        }
     }
 
     companion object {

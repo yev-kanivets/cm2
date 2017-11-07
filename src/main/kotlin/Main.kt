@@ -21,7 +21,9 @@ fun main(args: Array<String>) {
     timer.schedule(object : TimerTask() {
         override fun run() {
             fetchStudents {
-                it.forEach(::println)
+                firebaseClient.pushStudents(it) {
+                    print("Students pushed to Firebase")
+                }
             }
         }
     }, 0, 600000)
