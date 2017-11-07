@@ -2,6 +2,8 @@ import acmp.AcmpClient
 import firebase.FirebaseClient
 import model.Student
 import org.apache.log4j.BasicConfigurator
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
 import java.util.*
 
 /**
@@ -16,13 +18,14 @@ val acmpClient = AcmpClient()
 
 fun main(args: Array<String>) {
     BasicConfigurator.configure()
+    Logger.getRootLogger().level = Level.ERROR
 
     val timer = Timer()
     timer.schedule(object : TimerTask() {
         override fun run() {
             fetchStudents {
                 firebaseClient.pushStudents(it) {
-                    print("Students pushed to Firebase")
+                    print("${Date(System.currentTimeMillis())} Students pushed to Firebase")
                 }
             }
         }
