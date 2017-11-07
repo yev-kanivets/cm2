@@ -2,6 +2,7 @@ import acmp.AcmpClient
 import firebase.FirebaseClient
 import model.Student
 import org.apache.log4j.BasicConfigurator
+import java.util.*
 
 /**
  * Application entry point.
@@ -16,13 +17,14 @@ val acmpClient = AcmpClient()
 fun main(args: Array<String>) {
     BasicConfigurator.configure()
 
-    fetchStudents {
-        it.forEach(::println)
-    }
-
-    while (true) {
-
-    }
+    val timer = Timer()
+    timer.schedule(object : TimerTask() {
+        override fun run() {
+            fetchStudents {
+                it.forEach(::println)
+            }
+        }
+    }, 0, 600000)
 }
 
 fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Array<Student>) -> Unit) {
