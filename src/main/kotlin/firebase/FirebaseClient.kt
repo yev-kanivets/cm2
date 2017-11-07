@@ -59,8 +59,8 @@ class FirebaseClient {
         students.forEach {
             updates.put("${it.id}/startRating", it.startRating)
             updates.put("${it.id}/currentRating", it.currentRating)
-            //updates.put("${it.id}/solvedTasks", it.solvedTasks)
-            //updates.put("${it.id}/notSolvedTasks", it.notSolvedTasks)
+            updates.put("${it.id}/solvedTasks", it.solvedTasks.toList())
+            updates.put("${it.id}/notSolvedTasks", it.notSolvedTasks.toList())
         }
 
         usersRef.updateChildren(updates) { error: DatabaseError?, ref: DatabaseReference ->
