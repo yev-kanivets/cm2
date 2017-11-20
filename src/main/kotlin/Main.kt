@@ -1,5 +1,6 @@
 import acmp.AcmpClient
 import firebase.FirebaseClient
+import model.Bonus
 import model.Student
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.Level
@@ -20,6 +21,8 @@ fun main(args: Array<String>) {
     BasicConfigurator.configure()
     Logger.getRootLogger().level = Level.ERROR
 
+    val checkPeriod = if (args.size == 1) args[0].toLong() else 600000
+
     val timer = Timer()
     timer.schedule(object : TimerTask() {
         override fun run() {
@@ -29,7 +32,7 @@ fun main(args: Array<String>) {
                 }
             }
         }
-    }, 0, args[0].toLong())
+    }, 0, checkPeriod)
 }
 
 fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Array<Student>) -> Unit) {
@@ -44,7 +47,10 @@ fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Ar
                     if (student.startRating == -1) {
                         student.startRating = student.currentRating
                     }
+
                     student.bonusRating = 0
+                    student.bonuses.forEach { student.bonusRating += it.value }
+
                     student.contestRating = student.currentRating - student.startRating + student.bonusRating
                     student.solvedTasks = acmpUser.solvedTasks.toList()
                     student.notSolvedTasks = acmpUser.notSolvedTasks.toList()

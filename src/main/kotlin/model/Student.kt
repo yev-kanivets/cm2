@@ -17,5 +17,9 @@ data class Student(var id: String = "",
                    var currentRating: Int = -1,
                    var bonusRating: Int = 0,
                    var contestRating: Int = -1,
-                   var solvedTasks: List<String> = listOf<String>(),
-                   var notSolvedTasks: List<String> = listOf<String>())
+                   var bonuses: List<Bonus> = listOf(),
+                   var solvedTasks: List<String> = listOf(),
+                   var notSolvedTasks: List<String> = listOf())
+
+data class Bonus(val description: String = "",
+                 val value: Int = 0)

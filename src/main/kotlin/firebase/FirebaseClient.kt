@@ -61,6 +61,7 @@ class FirebaseClient {
             updates.put("${it.id}/currentRating", it.currentRating)
             updates.put("${it.id}/bonusRating", it.bonusRating)
             updates.put("${it.id}/contestRating", it.contestRating)
+            updates.put("${it.id}/bonuses", it.bonuses.toList())
             updates.put("${it.id}/solvedTasks", it.solvedTasks.toList())
             updates.put("${it.id}/notSolvedTasks", it.notSolvedTasks.toList())
         }
