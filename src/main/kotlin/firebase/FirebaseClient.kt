@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseCredentials
 import com.google.firebase.database.*
 import model.Student
 import java.io.FileInputStream
+import java.util.*
 
 /**
  * Class to fetch and push data to and from Firebase Realtime Database.
@@ -26,7 +27,7 @@ class FirebaseClient {
         FirebaseApp.initializeApp(options)
     }
 
-    public fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Array<Student>) -> Unit) {
+    fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Array<Student>) -> Unit) {
         val database = FirebaseDatabase.getInstance()
         val usersRef = database.getReference(KEY_USERS)
         usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -46,24 +47,24 @@ class FirebaseClient {
                 }
                 success(students.toTypedArray())
             }
-
         })
     }
 
-    public fun pushStudents(students: Array<Student>, failure: (reason: String) -> Unit = {}, success: () -> Unit) {
+    fun pushStudents(students: Array<Student>, failure: (reason: String) -> Unit = {}, success: () -> Unit) {
         val database = FirebaseDatabase.getInstance()
-        val usersRef = database.getReference(KEY_USERS)
+        val usersRef = database.reference
 
         val updates = mutableMapOf<String, Any>()
+        updates.put(LAST_UPDATE, Date(System.currentTimeMillis()).toString())
 
         students.forEach {
-            updates.put("${it.id}/startRating", it.startRating)
-            updates.put("${it.id}/currentRating", it.currentRating)
-            updates.put("${it.id}/bonusRating", it.bonusRating)
-            updates.put("${it.id}/contestRating", it.contestRating)
-            updates.put("${it.id}/bonuses", it.bonuses.toList())
-            updates.put("${it.id}/solvedTasks", it.solvedTasks.toList())
-            updates.put("${it.id}/notSolvedTasks", it.notSolvedTasks.toList())
+            updates.put("$KEY_USERS/${it.id}/startRating", it.startRating)
+            updates.put("$KEY_USERS/${it.id}/currentRating", it.currentRating)
+            updates.put("$KEY_USERS/${it.id}/bonusRating", it.bonusRating)
+            updates.put("$KEY_USERS/${it.id}/contestRating", it.contestRating)
+            updates.put("$KEY_USERS/${it.id}/bonuses", it.bonuses.toList())
+            updates.put("$KEY_USERS/${it.id}/solvedTasks", it.solvedTasks.toList())
+            updates.put("$KEY_USERS/${it.id}/notSolvedTasks", it.notSolvedTasks.toList())
         }
 
         usersRef.updateChildren(updates) { error: DatabaseError?, ref: DatabaseReference ->
@@ -77,6 +78,7 @@ class FirebaseClient {
 
     companion object {
         private val KEY_USERS = "users"
+        private val LAST_UPDATE = "lastUpdate"
     }
 
 }
