@@ -1,6 +1,5 @@
 import acmp.AcmpClient
 import firebase.FirebaseClient
-import model.Bonus
 import model.Student
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.Level
@@ -29,6 +28,9 @@ fun main(args: Array<String>) {
             fetchStudents {
                 firebaseClient.pushStudents(it) {
                     println("${Date(System.currentTimeMillis())} Students pushed to Firebase")
+                    firebaseClient.pushBackup(it) {
+                        println("Backup pushed to Firebase")
+                    }
                 }
             }
         }
