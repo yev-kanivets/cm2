@@ -5,6 +5,7 @@ import model.Student
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
+import telegram.TelegramBot
 import java.util.*
 
 /**
@@ -27,11 +28,7 @@ fun main(args: Array<String>) {
     timer.schedule(object : TimerTask() {
         override fun run() {
             fetchStudents { oldStudents, newStudents ->
-                val studentsDiff = mutableListOf<StudentDiff>()
-                newStudents.forEachIndexed { i, student ->
-                    studentsDiff.add(StudentDiff(oldStudents[i], student))
-                }
-                studentsDiff.forEach { if (it.isDiff) println(it) }
+                sendDiffs(oldStudents, newStudents)
 
                 firebaseClient.pushStudents(newStudents) {
                     println("${Date(System.currentTimeMillis())} Students pushed to Firebase")
@@ -44,8 +41,8 @@ fun main(args: Array<String>) {
     }, 0, checkPeriod)
 }
 
-fun fetchStudents(failure: (reason: String) -> Unit = {},
-                  success: (oldStudents: Array<Student>, newStudents: Array<Student>) -> Unit) {
+private fun fetchStudents(failure: (reason: String) -> Unit = {},
+                          success: (oldStudents: Array<Student>, newStudents: Array<Student>) -> Unit) {
     firebaseClient.fetchStudents { oldStudents ->
         val newStudents = mutableListOf<Student>()
         oldStudents.forEach { newStudents.add(it.copy()) }
@@ -73,4 +70,12 @@ fun fetchStudents(failure: (reason: String) -> Unit = {},
             success(oldStudents, newStudents.toTypedArray())
         }
     }
+}
+
+private fun sendDiffs(oldStudents: Array<Student>, newStudents: Array<Student>) {
+    val studentsDiff = mutableListOf<StudentDiff>()
+    newStudents.forEachIndexed { i, student ->
+        studentsDiff.add(StudentDiff(oldStudents[i], student))
+    }
+    TelegramBot.instance.sendStudentsDiff(studentsDiff)
 }

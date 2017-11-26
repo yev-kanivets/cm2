@@ -8,7 +8,7 @@ import model.Student
  *
  * @author Evgenii Kanivets
  */
-data class StudentDiff(private val old: Student, private val new: Student) {
+data class StudentDiff(val old: Student, val new: Student) {
 
     val currentRatingDiff by lazy { Diff(old.currentRating, new.currentRating, new.currentRating - old.currentRating) }
 
