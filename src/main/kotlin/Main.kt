@@ -1,4 +1,5 @@
 import acmp.AcmpClient
+import diff.StudentDiff
 import firebase.FirebaseClient
 import model.Student
 import org.apache.log4j.BasicConfigurator
@@ -25,10 +26,16 @@ fun main(args: Array<String>) {
     val timer = Timer()
     timer.schedule(object : TimerTask() {
         override fun run() {
-            fetchStudents {
-                firebaseClient.pushStudents(it) {
+            fetchStudents { oldStudents, newStudents ->
+                val studentsDiff = mutableListOf<StudentDiff>()
+                newStudents.forEachIndexed { i, student ->
+                    studentsDiff.add(StudentDiff(oldStudents[i], student))
+                }
+                studentsDiff.forEach { if (it.isDiff) println(it) }
+
+                firebaseClient.pushStudents(newStudents) {
                     println("${Date(System.currentTimeMillis())} Students pushed to Firebase")
-                    firebaseClient.pushBackup(it) {
+                    firebaseClient.pushBackup(newStudents) {
                         println("Backup pushed to Firebase")
                     }
                 }
@@ -37,10 +44,14 @@ fun main(args: Array<String>) {
     }, 0, checkPeriod)
 }
 
-fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Array<Student>) -> Unit) {
-    firebaseClient.fetchStudents { students ->
-        acmpClient.fetchStudents(students.map { it.acmpId }.toTypedArray()) { acmpUsers ->
-            students.forEach {
+fun fetchStudents(failure: (reason: String) -> Unit = {},
+                  success: (oldStudents: Array<Student>, newStudents: Array<Student>) -> Unit) {
+    firebaseClient.fetchStudents { oldStudents ->
+        val newStudents = mutableListOf<Student>()
+        oldStudents.forEach { newStudents.add(it.copy()) }
+
+        acmpClient.fetchStudents(newStudents.map { it.acmpId }.toTypedArray()) { acmpUsers ->
+            newStudents.forEach {
                 val student = it
                 val acmpUser = acmpUsers.find { it.acmpId == student.acmpId }
 
@@ -58,7 +69,8 @@ fun fetchStudents(failure: (reason: String) -> Unit = {}, success: (students: Ar
                     student.notSolvedTasks = acmpUser.notSolvedTasks.toList()
                 }
             }
-            success(students)
+
+            success(oldStudents, newStudents.toTypedArray())
         }
     }
 }
