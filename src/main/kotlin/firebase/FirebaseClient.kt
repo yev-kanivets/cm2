@@ -18,11 +18,11 @@ import java.util.*
 class FirebaseClient {
 
     init {
-        val serviceAccount = FileInputStream("codemarathon-2-firebase-adminsdk-l7nzs-4143645ad6.json")
+        val serviceAccount = FileInputStream("codemarathon-2-dev-firebase-adminsdk.json")
 
         val options = FirebaseOptions.Builder()
                 .setCredential(FirebaseCredentials.fromCertificate(serviceAccount))
-                .setDatabaseUrl("https://codemarathon-2.firebaseio.com")
+                .setDatabaseUrl("https://codemarathon-2-dev.firebaseio.com")
                 .build()
 
         FirebaseApp.initializeApp(options)
