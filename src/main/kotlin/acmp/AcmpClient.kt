@@ -68,12 +68,21 @@ class AcmpClient {
         success(acmpUsers.toTypedArray())
     }
 
-    fun fetchTasks(failure: (reason: String) -> Unit = {}, success: (tasks: List<AcmpTask>) -> Unit) {
+    fun fetchTasks(): List<AcmpTask> {
         val acmpTasks = mutableListOf<AcmpTask>()
 
-        acmpTasks += fetchTasksPage(0)
+        var page = 0
+        while (true) {
+            val pageTasks = fetchTasksPage(page)
+            if (pageTasks.isEmpty()) {
+                break
+            } else {
+                acmpTasks += pageTasks
+                page += 1
+            }
+        }
 
-        success(acmpTasks)
+        return acmpTasks
     }
 
     private fun fetchTasksPage(page: Int): List<AcmpTask> {
