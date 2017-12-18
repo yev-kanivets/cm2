@@ -5,6 +5,7 @@ import model.Student
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
+import storage.TasksStorage
 import telegram.TelegramBot
 import java.util.*
 
@@ -27,6 +28,10 @@ fun main(args: Array<String>) {
     val timer = Timer()
     timer.schedule(object : TimerTask() {
         override fun run() {
+            if (TasksStorage.instance.tasks.isEmpty()) {
+                TasksStorage.instance.tasks = acmpClient.fetchTasks().map { it.id to it }.toMap()
+                println("${TasksStorage.instance.tasks.size} tasks fetched from ACMP")
+            }
             fetchStudents { oldStudents, newStudents ->
                 sendDiffs(oldStudents, newStudents)
 
