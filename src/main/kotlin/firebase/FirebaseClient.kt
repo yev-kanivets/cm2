@@ -1,5 +1,6 @@
 package firebase
 
+import acmp.AcmpTask
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseCredentials
@@ -51,6 +52,22 @@ class FirebaseClient {
         })
     }
 
+    fun pushTasks(tasks: Array<AcmpTask>, failure: (reason: String) -> Unit = {}, success: () -> Unit) {
+        val database = FirebaseDatabase.getInstance()
+        val ref = database.reference
+
+        val updates = mutableMapOf<String, Any>()
+        updates.putAll(getTasks(tasks))
+
+        ref.updateChildren(updates) { error: DatabaseError?, dbRef: DatabaseReference ->
+            if (error == null) {
+                success()
+            } else {
+                failure(error.message)
+            }
+        }
+    }
+
     fun pushStudents(students: Array<Student>, failure: (reason: String) -> Unit = {}, success: () -> Unit) {
         val database = FirebaseDatabase.getInstance()
         val ref = database.reference
@@ -95,6 +112,21 @@ class FirebaseClient {
         })
     }
 
+    private fun getTasks(tasks: Array<AcmpTask>): Map<String, Any> {
+        val updates = mutableMapOf<String, Any>()
+
+        tasks.forEach {
+            updates.put("$KEY_TASKS/${it.id}/title", it.title)
+            updates.put("$KEY_TASKS/${it.id}/topic", it.topic)
+            updates.put("$KEY_TASKS/${it.id}/analysis", it.analysis ?: "Нет")
+            updates.put("$KEY_TASKS/${it.id}/difficulty", it.difficulty)
+            updates.put("$KEY_TASKS/${it.id}/solvency", it.solvency)
+            updates.put("$KEY_TASKS/${it.id}/accepted", it.accepted)
+        }
+
+        return updates
+    }
+
     private fun getStudentsUpdates(students: Array<Student>): Map<String, Any> {
         val updates = mutableMapOf<String, Any>()
 
@@ -112,6 +144,7 @@ class FirebaseClient {
     }
 
     companion object {
+        private val KEY_TASKS = "tasks"
         private val KEY_USERS = "users"
         private val KEY_LAST_UPDATE = "lastUpdate"
         private val KEY_BACKUPS = "backups"

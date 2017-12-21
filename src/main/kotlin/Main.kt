@@ -29,8 +29,12 @@ fun main(args: Array<String>) {
     timer.schedule(object : TimerTask() {
         override fun run() {
             if (TasksStorage.instance.tasks.isEmpty()) {
-                TasksStorage.instance.tasks = acmpClient.fetchTasks().map { it.id to it }.toMap()
+                val taskList = acmpClient.fetchTasks()
+                TasksStorage.instance.tasks = taskList.map { it.id to it }.toMap()
                 println("${TasksStorage.instance.tasks.size} tasks fetched from ACMP")
+                firebaseClient.pushTasks(taskList.toTypedArray()) {
+                    println("Tasks pushed to Firebase")
+                }
             }
             fetchStudents { oldStudents, newStudents ->
                 sendDiffs(oldStudents, newStudents)
