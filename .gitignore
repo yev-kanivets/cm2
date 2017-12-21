@@ -1,6 +1,7 @@
 .idea/
 build/
 .gradle/
+out/
 *.iml
 *.DS_Store
 codemarathon-2-dev-firebase-adminsdk.json
