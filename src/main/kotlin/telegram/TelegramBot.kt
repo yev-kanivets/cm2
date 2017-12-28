@@ -1,5 +1,6 @@
 package telegram
 
+import storage.TasksStorage
 import diff.StudentDiff
 import retrofit2.Retrofit
 import telegram.retrofit.TelegramService
@@ -30,9 +31,12 @@ class TelegramBot private constructor() {
     private fun sendDiff(studentDiff: StudentDiff) {
         if (studentDiff.currentRatingDiff.isDiff && studentDiff.solvedTasksDiff.diff.isNotEmpty()) {
             val sb = StringBuilder()
-            sb.append("+${studentDiff.currentRatingDiff.diff} рейтинга ${studentDiff.solvedTasksDiff.diff} ")
-            sb.append(studentDiff.new.fullname)
-
+            sb.append("+${studentDiff.currentRatingDiff.diff} рейтинга ${studentDiff.new.fullname}:\n")
+            for (taskNumber in studentDiff.solvedTasksDiff.diff) {
+                val task = TasksStorage.instance.tasks[taskNumber.toInt()]
+                if (task != null) sb.append("[${taskNumber}] ${task.title} ${task.difficulty}%\n")
+            }  
+                
             val call = telegramService.sendMessage(getChatId(studentDiff.new.division), sb.toString())
             val response = call.execute()
             println(response.isSuccessful)
