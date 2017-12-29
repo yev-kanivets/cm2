@@ -52,7 +52,7 @@ object StatisticsUtil {
             }
         }
 
-        return StudentStatistics(student.acmpId, diff1_20, diff21_40, diff41_60, diff61_80, diff81_100)
+        return StudentStatistics(student.id, diff1_20, diff21_40, diff41_60, diff61_80, diff81_100)
     }
 
 }

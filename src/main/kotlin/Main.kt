@@ -39,10 +39,10 @@ fun main(args: Array<String>) {
             }
             fetchStudents { oldStudents, newStudents ->
                 sendDiffs(oldStudents, newStudents)
-                println(StatisticsUtil.calculateStatistics(newStudents.toList()))
 
-                firebaseClient.pushStudents(newStudents) {
-                    println("${Date(System.currentTimeMillis())} Students pushed to Firebase")
+                val statistics = StatisticsUtil.calculateStatistics(newStudents.toList())
+                firebaseClient.pushStudentsAndStatistics(newStudents, statistics) {
+                    println("${Date(System.currentTimeMillis())} Students and Statistics pushed to Firebase")
                     firebaseClient.pushBackup(newStudents) {
                         println("Backup pushed to Firebase")
                     }
