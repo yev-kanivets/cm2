@@ -1,10 +1,12 @@
 package firebase
 
+import acmp.AcmpTask
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseCredentials
 import com.google.firebase.database.*
 import model.Student
+import statistics.model.Statistics
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.*
@@ -18,11 +20,11 @@ import java.util.*
 class FirebaseClient {
 
     init {
-        val serviceAccount = FileInputStream("codemarathon-2-firebase-adminsdk-l7nzs-4143645ad6.json")
+        val serviceAccount = FileInputStream("codemarathon-2-dev-firebase-adminsdk.json")
 
         val options = FirebaseOptions.Builder()
                 .setCredential(FirebaseCredentials.fromCertificate(serviceAccount))
-                .setDatabaseUrl("https://codemarathon-2.firebaseio.com")
+                .setDatabaseUrl("https://codemarathon-2-dev.firebaseio.com")
                 .build()
 
         FirebaseApp.initializeApp(options)
@@ -51,13 +53,31 @@ class FirebaseClient {
         })
     }
 
-    fun pushStudents(students: Array<Student>, failure: (reason: String) -> Unit = {}, success: () -> Unit) {
+    fun pushTasks(tasks: Array<AcmpTask>, failure: (reason: String) -> Unit = {}, success: () -> Unit) {
+        val database = FirebaseDatabase.getInstance()
+        val ref = database.reference
+
+        val updates = mutableMapOf<String, Any>()
+        updates.putAll(getTasks(tasks))
+
+        ref.updateChildren(updates) { error: DatabaseError?, dbRef: DatabaseReference ->
+            if (error == null) {
+                success()
+            } else {
+                failure(error.message)
+            }
+        }
+    }
+
+    fun pushStudentsAndStatistics(students: Array<Student>, statistics: Statistics,
+                                  failure: (reason: String) -> Unit = {}, success: () -> Unit) {
         val database = FirebaseDatabase.getInstance()
         val ref = database.reference
 
         val updates = mutableMapOf<String, Any>()
         updates.put(KEY_LAST_UPDATE, Date(System.currentTimeMillis()).toString())
         updates.putAll(getStudentsUpdates(students))
+        updates.putAll(getStatisticsUpdates(statistics))
 
         ref.updateChildren(updates) { error: DatabaseError?, dbRef: DatabaseReference ->
             if (error == null) {
@@ -95,6 +115,21 @@ class FirebaseClient {
         })
     }
 
+    private fun getTasks(tasks: Array<AcmpTask>): Map<String, Any> {
+        val updates = mutableMapOf<String, Any>()
+
+        tasks.forEach {
+            updates.put("$KEY_TASKS/${it.id}/title", it.title)
+            updates.put("$KEY_TASKS/${it.id}/topic", it.topic)
+            updates.put("$KEY_TASKS/${it.id}/analysis", it.analysis ?: "Нет")
+            updates.put("$KEY_TASKS/${it.id}/difficulty", it.difficulty)
+            updates.put("$KEY_TASKS/${it.id}/solvency", it.solvency)
+            updates.put("$KEY_TASKS/${it.id}/accepted", it.accepted)
+        }
+
+        return updates
+    }
+
     private fun getStudentsUpdates(students: Array<Student>): Map<String, Any> {
         val updates = mutableMapOf<String, Any>()
 
@@ -111,10 +146,31 @@ class FirebaseClient {
         return updates
     }
 
+    private fun getStatisticsUpdates(statistics: Statistics): Map<String, Any> {
+        val updates = mutableMapOf<String, Any>()
+
+        updates.put("$KEY_STATISTICS/totalStartRating", statistics.totalStartRating)
+        updates.put("$KEY_STATISTICS/totalCurrentRating", statistics.totalCurrentRating)
+        updates.put("$KEY_STATISTICS/totalBonusRating", statistics.totalBonusRating)
+        updates.put("$KEY_STATISTICS/totalContestRating", statistics.totalContestRating)
+
+        statistics.studentStatistics.forEach {
+            updates.put("$KEY_STATISTICS/studentStatistics/${it.id}/diff1_20", it.diff1_20)
+            updates.put("$KEY_STATISTICS/studentStatistics/${it.id}/diff21_40", it.diff21_40)
+            updates.put("$KEY_STATISTICS/studentStatistics/${it.id}/diff41_60", it.diff41_60)
+            updates.put("$KEY_STATISTICS/studentStatistics/${it.id}/diff61_80", it.diff61_80)
+            updates.put("$KEY_STATISTICS/studentStatistics/${it.id}/diff81_100", it.diff81_100)
+        }
+
+        return updates
+    }
+
     companion object {
+        private val KEY_TASKS = "tasks"
         private val KEY_USERS = "users"
         private val KEY_LAST_UPDATE = "lastUpdate"
         private val KEY_BACKUPS = "backups"
+        private val KEY_STATISTICS = "statistics"
     }
 
 }

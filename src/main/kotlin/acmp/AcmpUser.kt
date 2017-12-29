@@ -1,7 +1,7 @@
 package acmp
 
 /**
- * ata class to represent ACMP user.
+ * Data class to represent ACMP user.
  * Created on 11/6/17.
  *
  * @author Evgenii Kanivets

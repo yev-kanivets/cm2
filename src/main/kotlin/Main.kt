@@ -5,6 +5,8 @@ import model.Student
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
+import statistics.StatisticsUtil
+import storage.TasksStorage
 import telegram.TelegramBot
 import java.util.*
 
@@ -27,11 +29,20 @@ fun main(args: Array<String>) {
     val timer = Timer()
     timer.schedule(object : TimerTask() {
         override fun run() {
+            if (TasksStorage.instance.tasks.isEmpty()) {
+                val taskList = acmpClient.fetchTasks()
+                TasksStorage.instance.tasks = taskList.map { it.id to it }.toMap()
+                println("${TasksStorage.instance.tasks.size} tasks fetched from ACMP")
+                firebaseClient.pushTasks(taskList.toTypedArray()) {
+                    println("Tasks pushed to Firebase")
+                }
+            }
             fetchStudents { oldStudents, newStudents ->
                 sendDiffs(oldStudents, newStudents)
 
-                firebaseClient.pushStudents(newStudents) {
-                    println("${Date(System.currentTimeMillis())} Students pushed to Firebase")
+                val statistics = StatisticsUtil.calculateStatistics(newStudents.toList())
+                firebaseClient.pushStudentsAndStatistics(newStudents, statistics) {
+                    println("${Date(System.currentTimeMillis())} Students and Statistics pushed to Firebase")
                     firebaseClient.pushBackup(newStudents) {
                         println("Backup pushed to Firebase")
                     }
