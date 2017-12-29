@@ -5,6 +5,7 @@ import model.Student
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
+import statistics.StatisticsUtil
 import storage.TasksStorage
 import telegram.TelegramBot
 import java.util.*
@@ -38,6 +39,7 @@ fun main(args: Array<String>) {
             }
             fetchStudents { oldStudents, newStudents ->
                 sendDiffs(oldStudents, newStudents)
+                println(StatisticsUtil.calculateStatistics(newStudents.toList()))
 
                 firebaseClient.pushStudents(newStudents) {
                     println("${Date(System.currentTimeMillis())} Students pushed to Firebase")
